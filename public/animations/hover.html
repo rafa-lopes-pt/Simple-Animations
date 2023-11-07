@@ -1,0 +1,213 @@
+<html>
+    <head>
+        <title>Hover Effect</title>
+        <link rel="stylesheet" href="hover.css" />
+
+        <style>
+            :root {
+                --bg-color: rgb(20, 20, 20);
+                --card-color: rgb(23, 23, 23);
+            }
+            * {
+                user-select: none;
+            }
+            :root,
+            html,
+            body {
+                height: 100%;
+                margin: 0px;
+                padding: 0px;
+            }
+            body {
+                background-color: var(--bg-color);
+                overflow: auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #cards {
+                display: flex;
+                place-content: center;
+                place-items: center;
+                flex-wrap: wrap;
+                gap: 8px;
+                max-width: 922px;
+                width: calc(100% - 20px);
+            }
+            @media (max-width: 440px) {
+                body {
+                    align-items: flex-start;
+                    padding: 2rem;
+                }
+            }
+
+            .card {
+                background-color: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                min-width: 200px;
+                min-height: 200px;
+                height: 30vmin;
+                width: 35vmin;
+                max-height: 260px;
+                max-width: 300px;
+                border-radius: 10px;
+                cursor: pointer;
+                position: relative;
+            }
+
+            .card:hover::before,
+            .card:hover > .card-border {
+                opacity: 1;
+            }
+
+            #cards:hover,
+            #cards:hover > .card > .card-border {
+                opacity: 1;
+            }
+
+            .card::before,
+            .card > .card-border {
+                content: "";
+
+                background: radial-gradient(
+                    800px circle at var(--mouse-x) var(--mouse-y),
+                    rgba(255, 255, 255, 0.06),
+                    transparent 40%
+                );
+                border-radius: inherit;
+                height: 100%;
+                width: 100%;
+                left: 0%;
+                top: 0px;
+                position: absolute;
+                z-index: 3;
+                opacity: 0;
+                transition: opacity 0.5s ease-in-out;
+            }
+
+            .card > .card-border {
+                background: radial-gradient(
+                    500px circle at var(--mouse-x) var(--mouse-y),
+                    #7fffd4,
+                    transparent 40%
+                );
+                z-index: 1;
+            }
+
+            .card > .card-content {
+                background-color: var(--card-color);
+
+                border-radius: inherit;
+                margin: 1px;
+                width: calc(100% - 2px);
+                height: calc(100% - 2px);
+                z-index: 2;
+                position: relative;
+
+                display: flex;
+                place-content: center;
+                place-items: center;
+                flex-direction: column;
+            }
+            /* ==================== */
+
+            .card-content > i {
+                font-size: 2rem;
+                color: aquamarine;
+            }
+
+            .text {
+                background: transparent;
+                text-align: center;
+                color: #ddd;
+                font: 1.3rem Monospace;
+                max-width: 85%;
+            }
+            @media (hover: hover) {
+                .warning {
+                    display: none;
+                }
+            }
+            @media (hover: none) {
+                .warning {
+                    display: flex;
+                    flex-flow: column;
+                    place-content: center;
+                    place-items: center;
+                    text-align: center;
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 10;
+                    width: 55%;
+
+                    font-size: 3rem;
+                    padding: 1em;
+                    border-radius: 15px;
+
+                    background-color: #ccc5;
+                    color: #eee;
+                    border: 2px solid #eee;
+                    backdrop-filter: blur(5px);
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="cards"></div>
+        <div class="warning">
+            <h3>Sorry :(</h3>
+            Seems like you device does not support the "hovering" effect
+        </div>
+
+        <!-- Dinamyc Content -->
+        <script>
+            const content = [
+                { text: "Coding Rocks!", icon: "fa-code" },
+                { text: "Need Coffee...", icon: "fa-mug-saucer" },
+                { text: "Not a bug...it's a feature", icon: "fa-bug" },
+                { text: "Commit to master branch!", icon: "fa-code-commit" },
+                { text: "d if=/dev/random of=/dev/sda", icon: "fa-terminal" },
+                {
+                    text: "Might need help from a senior...",
+                    icon: "fa-fire-extinguisher",
+                },
+            ];
+
+            document.getElementById("cards").innerHTML = content
+                .map(
+                    (el) => `  
+                    <div class="card">
+                        <div class="card-border"></div>
+                        <div class="card-content">
+                            <i class="fa-solid ${el.icon}"></i>
+                            <p class="text">${el.text}</p>
+                        </div>
+                    </div>
+            `
+                )
+                .join("");
+        </script>
+        <!-- Mouse Tracking -->
+        <script>
+            document.getElementById("cards").onmousemove = (e) => {
+                for (const card of document.getElementsByClassName("card")) {
+                    const rect = card.getBoundingClientRect(),
+                        x = e.clientX - rect.left,
+                        y = e.clientY - rect.top;
+
+                    card.style.setProperty("--mouse-x", `${x}px`);
+                    card.style.setProperty("--mouse-y", `${y}px`);
+                }
+            };
+        </script>
+        <!-- Font Awsome -->
+        <script
+            src="https://kit.fontawesome.com/1a62655504.js"
+            crossorigin="anonymous"
+        ></script>
+    </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Hello World</title>
+        <link rel="stylesheet" href="css.css" />
+
+        <style>
+            :root {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                display: flex;
+                place-content: center;
+                place-items: center;
+                background-color: #333;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #text-box {
+                color: #eee;
+                border: 2px solid #ddd;
+                padding: 1em;
+                border-radius: 15px;
+                transition: all 0.5s ease;
+                box-shadow: 2px 2px 10px 2px #ddd;
+            }
+            #text-box:hover {
+                box-shadow: 2px 2px 20px 2px #ddd;
+            }
+            @keyframes carret_blink {
+                from {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            #text-box .carret {
+                animation: carret_blink 1.5s linear infinite forwards;
+            }
+
+            /*# sourceMappingURL=css.css.map */
+        </style>
+    </head>
+
+    <body>
+        <h1 id="text-box">
+            <span class="text"></span><span class="carret">_</span>
+        </h1>
+    </body>
+
+    <script>
+        const textEl = document.querySelector(".text");
+
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function animate() {
+            const target = "hello world",
+                alphabet = "abcdefghijklmnopqrstuvwxyz".split(""),
+                txt = [];
+
+            for (let i in target) {
+                if (!alphabet.includes(target[i])) {
+                    txt[i] = target[i];
+                    continue;
+                }
+
+                for (const letter of alphabet) {
+                    txt[i] = letter;
+                    textEl.innerHTML = txt.join("");
+                    console.log(txt);
+                    await sleep(40).then(() => {});
+
+                    if (letter === target[i]) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        animate();
+    </script>
+</html>

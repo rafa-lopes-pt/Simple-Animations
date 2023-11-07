@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Liquid Divs</title>
+        <style>
+            html,
+            :root,
+            body {
+                height: 100%;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                user-select: none;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                place-content: center;
+                place-items: center;
+                background-color: #333;
+            }
+            h1 {
+                color: #eee;
+                text-align: center;
+                font-size: 3rem;
+                margin: 1rem;
+            }
+            .showcase {
+                height: 25%;
+                width: 50%;
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: 1fr;
+                place-content: center;
+                place-items: center;
+                gap: 1em;
+            }
+            .bubble-wrapper {
+                height: 100%;
+                width: 100%;
+                aspect-ratio: square;
+                position: relative;
+                overflow: hidden;
+                border: 2px solid #eee;
+            }
+
+            .full::after {
+                display: block;
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: red;
+            }
+            .full .bubble {
+                top: 50%;
+            }
+
+            @keyframes wave {
+                from,
+                to {
+                    transform: translateX(-50%);
+                }
+
+                50% {
+                    transform: translate(-50%, -20%);
+                }
+            }
+            .bubble {
+                width: 100%;
+                height: 100%;
+                border-radius: 80%;
+                background-color: red;
+                position: absolute;
+                top: 100%;
+                left: 50%;
+
+                animation: wave 1s ease-in-out infinite;
+            }
+
+            .modal {
+                position: absolute;
+                color: #eee;
+                background-color: #2229;
+                padding: 0.25em 1em;
+                border-radius: 15px;
+                font-size: 2rem;
+                box-shadow: inset 2px 2px 20px 2px #222, 2px 2px 20px 2px #ccc9;
+                opacity: 0;
+                transition: all 1s ease;
+            }
+
+            .modal[data-show="false"] {
+                opacity: 0;
+            }
+            .modal[data-show="true"] {
+                opacity: 1;
+            }
+
+            .unsupported {
+                opacity: 0;
+                transition: all 1s ease;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                color: #eee;
+                backdrop-filter: blur(10px) grayscale(50%);
+                border-radius: 15px;
+                display: flex;
+                place-content: center;
+                place-items: center;
+                flex-flow: column;
+                gap: 1em;
+                font-size: 1.5em;
+                text-align: center;
+                z-index: -1;
+            }
+
+            @media (hover: none) {
+                .unsupported {
+                    opacity: 1;
+                    z-index: 1;
+                }
+                .modal {
+                    opacity: 0 !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Liquid Divs</h1>
+        <div class="showcase">
+            <div class="bubble-wrapper"></div>
+            <div class="bubble-wrapper full"></div>
+            <div class="bubble-wrapper full"></div>
+            <div class="bubble-wrapper"></div>
+            <div class="modal">Hover me to see the effect!</div>
+        </div>
+        <div class="unsupported">
+            <h1>Oops :(</h1>
+            <p>Seems like your browser does not support this feature</p>
+        </div>
+    </body>
+
+    <script>
+        const wrapper = document.querySelectorAll(".bubble-wrapper");
+        const fullWrapper = document.querySelectorAll(".full");
+        const modal = document.querySelector(".modal");
+
+        const setModalTimeout = () => {
+            return setTimeout(() => (modal.dataset.show = "true"), 5000);
+        };
+        const clearModal = () => {
+            modal.dataset.show = "false";
+        };
+        let isMouseMoving = false;
+        let glitchTimout;
+        let modalTimeout = setModalTimeout();
+
+        function resetIdleTimeout() {
+            clearTimeout(glitchTimout);
+            clearTimeout(modalTimeout);
+            clearModal();
+            glitchTimout = setTimeout(() => {
+                isMouseMoving = false;
+            }, 1000);
+            modalTimeout = setTimeout(
+                () => (modal.dataset.show = "true"),
+                3000
+            );
+        }
+
+        const animateBubble = (x, wrapper) => {
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            const posX = Math.max(
+                0,
+                Math.min(wrapper.clientWidth, x - bubble.offsetWidth / 2)
+            );
+            bubble.style.left = `${posX}px`;
+            wrapper.appendChild(bubble);
+            setTimeout(() => {
+                wrapper.removeChild(bubble);
+            }, 1000);
+        };
+
+        //=============================================
+        //This fixes a small "glitch" when the cursor stops moving, one last bubble is animated
+        //Without more bubbles to create the liquid effect, it gets weirds
+
+        function onMouseMoveEventHandler(e) {
+            animateBubble(e.offsetX, this);
+            isMouseMoving = true;
+
+            // Reset the idle timeout
+            resetIdleTimeout();
+        }
+
+        wrapper.forEach((el) => {
+            el.addEventListener("mousemove", onMouseMoveEventHandler);
+        });
+        fullWrapper.forEach((el) => {
+            el.addEventListener("mousemove", onMouseMoveEventHandler);
+        });
+
+        setInterval(() => {
+            if (!isMouseMoving) {
+                wrapper.forEach((el) => {
+                    el.innerHTML = "";
+                });
+                fullWrapper.forEach((el) => {
+                    el.innerHTML = "";
+                });
+            }
+        }, 1000);
+    </script>
+</html>

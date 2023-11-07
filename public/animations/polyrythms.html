@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Polyrhythms</title>
+        <link rel="stylesheet" href="polyrythms.css" />
+        <script
+            src="https://kit.fontawesome.com/1a62655504.js"
+            crossorigin="anonymous"
+        ></script>
+
+        <style>
+            html,
+            body {
+                height: 100vh;
+                background-color: black;
+                color: #eee;
+                overflow: hidden;
+                font-family: "Noto Sans", sans-serif;
+
+                display: flex;
+                flex-direction: column;
+                place-content: center;
+                place-items: center;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            a {
+                text-decoration: none; /* Remove underline */
+                color: inherit; /* Inherit text color from parent */
+                background-color: transparent; /* Remove background color */
+                cursor: pointer; /* Change cursor to pointer on hover */
+
+                /* Styling for visited links */
+                &:visited {
+                    color: inherit; /* Inherit visited link color from parent */
+                }
+
+                /* Styling for hover/focus */
+                &:hover,
+                &:focus {
+                    text-decoration: underline; /* Add underline on hover or focus */
+                    /* You can also change the color or background here if desired */
+                }
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-evenly;
+                flex-direction: column;
+                align-items: center;
+                padding: 0.25em 5em;
+                z-index: 5;
+                text-align: center;
+                width: 75%;
+            }
+
+            .header__title {
+                flex: 6;
+                font-size: 2rem;
+            }
+            .header__links {
+                flex: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 1.25rem;
+                /* width: 50%; */
+                margin-top: 1em;
+                margin-bottom: 1.5em;
+            }
+            .header__links i {
+                margin-right: 0.25em;
+            }
+            .header__links > * {
+                margin-left: 1em;
+                display: flex;
+            }
+
+            canvas {
+                height: 75vh;
+                width: 75vw;
+                position: relative;
+                z-index: 9;
+                transition: all 0.5s ease;
+            }
+
+            #background-image {
+                height: 100%;
+                width: 100%;
+                position: fixed;
+                top: 0px;
+                left: 0px;
+            }
+
+            @keyframes wander {
+                0% {
+                    transform: scale(130%) translate(5%, 5%) rotateZ(5deg);
+                }
+                25% {
+                    transform: scale(129%) translate(5%, -5%) rotateZ(-5deg);
+                }
+
+                50% {
+                    transform: scale(128%) translate(-5%, -5%) rotateZ(5deg);
+                    filter: grayscale(30%) saturate(300%) brightness(120%);
+                }
+                75% {
+                    transform: scale(129%) translate(-5%, 5%) rotateZ(-5deg);
+                }
+
+                100% {
+                    transform: scale(130%) translate(5%, 5%) rotateZ(5deg);
+                }
+            }
+
+            #background-image {
+                z-index: 1;
+                background-image: url("./bg.jpg");
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+                opacity: 0.6;
+                filter: grayscale(30%) saturate(150%);
+
+                animation: wander 120s forwards infinite linear;
+            }
+
+            #paper[data-toggled="false"] {
+                filter: blur(4px);
+            }
+            #paper[data-toggled="true"] {
+                filter: blur(0px);
+            }
+
+            #sound-message {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                translate: -50% -50%;
+                z-index: 3;
+                padding: 0.75rem;
+                background-color: rgb(255 255 255 / 5%);
+                border-radius: 0.4rem;
+                transition: opacity 1000ms;
+                pointer-events: none;
+            }
+
+            body:has(#paper[data-toggled="true"]) #sound-message {
+                opacity: 0;
+            }
+
+            #sound-message > p {
+                color: white;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="background-image"></div>
+
+        <div id="sound-message">
+            <p>Click anywhere to toggle sound</p>
+        </div>
+
+        <canvas id="paper" data-toggled="false"></canvas>
+    </body>
+
+    <!-- LINK: https://surikov.github.io/webaudiofont/ -->
+    <script src="https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js"></script>
+    <script src="https://surikov.github.io/webaudiofontdata/sound/0110_Chaos_sf2_file.js"></script>
+    <!--  -->
+    <script>
+        const canvas = document.querySelector("canvas"),
+            pen = canvas.getContext("2d");
+
+        const colors = Array(21).fill("#ddf");
+
+        const settings = {
+            startTime: new Date().getTime(),
+            duration: 450, // Total time for all dots to realign at the starting point
+            maxCycles: Math.max(colors.length, 100),
+            soundEnabled: false,
+            pulseEnabled: true,
+        };
+
+        //=============== SOUND
+        const handleSoundToggle = (enabled = !settings.soundEnabled) => {
+            settings.soundEnabled = enabled;
+            canvas.dataset.toggled = enabled;
+        };
+        document.onvisibilitychange = () => handleSoundToggle(false);
+        canvas.onclick = () => handleSoundToggle();
+
+        var selectedPreset = _tone_0110_Chaos_sf2_file;
+        var AudioContextFunc = window.AudioContext || window.webkitAudioContext;
+        var audioContext = new AudioContextFunc();
+        var player = new WebAudioFontPlayer();
+        player.adjustPreset(audioContext, selectedPreset);
+
+        function playNote(pitch) {
+            var audioBufferSourceNode = player.queueWaveTable(
+                audioContext,
+                audioContext.destination,
+                selectedPreset,
+                audioContext.currentTime + 0,
+                pitch,
+                0.1
+            );
+        }
+
+        //==================== AUX FNs
+        //=============================================================
+        const calculateVelocity = (index) => {
+            const numberOfCycles = settings.maxCycles - index,
+                distancePerCycle = 2 * Math.PI;
+
+            return (numberOfCycles * distancePerCycle) / settings.duration;
+        };
+
+        const calculateNextImpactTime = (currentImpactTime, velocity) => {
+            return currentImpactTime + (Math.PI / velocity) * 1000;
+        };
+
+        const calculateDynamicOpacity = (
+            currentTime,
+            lastImpactTime,
+            baseOpacity,
+            maxOpacity,
+            duration
+        ) => {
+            const timeSinceImpact = currentTime - lastImpactTime,
+                percentage = Math.min(timeSinceImpact / duration, 1),
+                opacityDelta = maxOpacity - baseOpacity;
+
+            return maxOpacity - opacityDelta * percentage;
+        };
+
+        const determineOpacity = (
+            currentTime,
+            lastImpactTime,
+            baseOpacity,
+            maxOpacity,
+            duration
+        ) => {
+            if (!settings.pulseEnabled) return baseOpacity;
+
+            return calculateDynamicOpacity(
+                currentTime,
+                lastImpactTime,
+                baseOpacity,
+                maxOpacity,
+                duration
+            );
+        };
+
+        const calculatePositionOnArc = (center, radius, angle) => ({
+            x: center.x + radius * Math.cos(angle),
+            y: center.y + radius * Math.sin(angle),
+        });
+
+        //play key fn
+        const playKey = (i) => {
+            if (i % 2 === 0) {
+                playNote(i + 12 * 6);
+            } else {
+                playNote(i + 12 * 8);
+            }
+        };
+        //=============================================================
+
+        //==POPULATE ARCS & DRAW FNs
+        let arcs = [];
+        const init = () => {
+            pen.lineCap = "round";
+
+            arcs = colors.map((color, index) => {
+                const velocity = calculateVelocity(index),
+                    lastImpactTime = 0,
+                    nextImpactTime = calculateNextImpactTime(
+                        settings.startTime,
+                        velocity
+                    );
+
+                return {
+                    color,
+                    velocity,
+                    lastImpactTime,
+                    nextImpactTime,
+                };
+            });
+        };
+
+        const drawArc = (x, y, radius, start, end, action = "stroke") => {
+            pen.beginPath();
+
+            pen.arc(x, y, radius, start, end);
+
+            if (action === "stroke") pen.stroke();
+            else pen.fill();
+        };
+
+        const drawPointOnArc = (center, arcRadius, pointRadius, angle) => {
+            const position = calculatePositionOnArc(center, arcRadius, angle);
+
+            drawArc(
+                position.x,
+                position.y,
+                pointRadius,
+                0,
+                2 * Math.PI,
+                "fill"
+            );
+        };
+
+        const draw = () => {
+            // Definitely not optimized
+            paper.width = paper.clientWidth * 0.75;
+            paper.height = paper.clientHeight * 0.75;
+
+            const currentTime = new Date().getTime(),
+                elapsedTime = (currentTime - settings.startTime) / 1000;
+
+            const length = Math.min(paper.width, paper.height) * 0.9,
+                offset = (paper.width - length) / 2;
+
+            const start = {
+                x: offset,
+                y: paper.height / 2,
+            };
+
+            const end = {
+                x: paper.width - offset,
+                y: paper.height / 2,
+            };
+
+            const center = {
+                x: paper.width / 2,
+                y: paper.height / 2,
+            };
+
+            const base = {
+                length: end.x - start.x,
+                minAngle: 0,
+                startAngle: 0,
+                maxAngle: 2 * Math.PI,
+            };
+
+            base.initialRadius = base.length * 0.05;
+            base.circleRadius = base.length * 0.006;
+            base.clearance = base.length * 0.03;
+            base.spacing =
+                (base.length - base.initialRadius - base.clearance) /
+                2 /
+                colors.length;
+
+            arcs.forEach((arc, index) => {
+                const radius = base.initialRadius + base.spacing * index;
+
+                // Draw arcs
+                pen.globalAlpha = determineOpacity(
+                    currentTime,
+                    arc.lastImpactTime,
+                    0.15,
+                    0.65,
+                    1000
+                );
+                pen.lineWidth = base.length * 0.002;
+                pen.strokeStyle = arc.color;
+
+                const offset = (base.circleRadius * (5 / 3)) / radius;
+
+                drawArc(
+                    center.x,
+                    center.y,
+                    radius,
+                    Math.PI + offset,
+                    2 * Math.PI - offset
+                );
+
+                drawArc(center.x, center.y, radius, offset, Math.PI - offset);
+
+                // Draw impact points
+                pen.globalAlpha = determineOpacity(
+                    currentTime,
+                    arc.lastImpactTime,
+                    0.15,
+                    0.85,
+                    1000
+                );
+                pen.fillStyle = arc.color;
+
+                drawPointOnArc(
+                    center,
+                    radius,
+                    base.circleRadius * 0.75,
+                    Math.PI
+                );
+
+                drawPointOnArc(
+                    center,
+                    radius,
+                    base.circleRadius * 0.75,
+                    2 * Math.PI
+                );
+
+                // Draw moving circles
+                pen.globalAlpha = 1;
+                pen.fillStyle = arc.color;
+
+                if (currentTime >= arc.nextImpactTime) {
+                    if (settings.soundEnabled) {
+                        playKey(index);
+                        arc.lastImpactTime = arc.nextImpactTime;
+                    }
+
+                    arc.nextImpactTime = calculateNextImpactTime(
+                        arc.nextImpactTime,
+                        arc.velocity
+                    );
+                }
+
+                const distance =
+                        elapsedTime >= 0 ? elapsedTime * arc.velocity : 0,
+                    angle = (Math.PI + distance) % base.maxAngle;
+
+                drawPointOnArc(center, radius, base.circleRadius, angle);
+            });
+
+            requestAnimationFrame(draw);
+        };
+
+        init();
+        draw();
+        //
+    </script>
+</html>

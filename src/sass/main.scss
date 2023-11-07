@@ -1,0 +1,115 @@
+@use "./grid.scss";
+@use "./projects-section";
+#root {
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+html,
+:root,
+#root,
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #333;
+    color: #eee;
+}
+
+body > * {
+    display: flex;
+    place-content: center;
+    place-items: center;
+    flex-flow: column;
+}
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #222;
+    color: #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25em 5em;
+
+    &__title {
+        text-align: start;
+        flex: 6;
+        font-size: 2rem;
+    }
+    &__links {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: center;
+        font-size: 1.25rem;
+        gap: 1rem;
+    }
+    &__links i {
+        margin-right: 0.25em;
+        display: inline-block;
+    }
+}
+
+a {
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Inherit text color from parent */
+    background-color: transparent; /* Remove background color */
+    cursor: pointer; /* Change cursor to pointer on hover */
+
+    /* Styling for visited links */
+    &:visited {
+        color: inherit; /* Inherit visited link color from parent */
+    }
+
+    /* Styling for hover/focus */
+    &:hover,
+    &:focus {
+        text-decoration: underline; /* Add underline on hover or focus */
+        /* You can also change the color or background here if desired */
+    }
+}
+
+.unsupported {
+    opacity: 0;
+    transition: all 1s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: #eee;
+    backdrop-filter: blur(10px) grayscale(50%);
+    border-radius: 15px;
+    display: flex;
+    place-content: center;
+    place-items: center;
+    flex-flow: column;
+    gap: 1em;
+    font-size: 1.5em;
+    text-align: center;
+    z-index: -1;
+}
+
+.unsupported p {
+    max-width: 90%;
+}
+
+.solution {
+    font-size: 0.75em;
+}
+
+@media (hover: none) {
+    .unsupported {
+        opacity: 1;
+        z-index: 1;
+    }
+}
