@@ -121,6 +121,14 @@
                     color: #eee;
                     background-color: rgba(85, 85, 85, 0.3333333333);
                 }
+
+                .clock .marker > * {
+                    opacity: 0;
+                    transition: opacity 1s ease;
+                }
+                .clock:hover .marker > * {
+                    opacity: 1;
+                }
                 .clock:hover .time-grid {
                     filter: blur(5px);
                 }
@@ -1191,12 +1199,12 @@
                 const marker = document.querySelector(".marker");
 
                 marker.innerHTML = "";
-                marker.innerHTML = `
+                marker.innerHTML = `<span>
                     ${toDoubleDigit(parseToMeridian(h))} : ${toDoubleDigit(
                     m
                 )} : ${toDoubleDigit(s)} <span class="marker__ampm">${
                     h > 12 ? "PM" : "AM"
-                }</span>`;
+                }</span></span>`;
 
                 animationID = requestAnimationFrame(animate);
             }
